@@ -1,6 +1,7 @@
 import os
 import requests
 import pandas as pd
+import json
 
 BASE_URL = "https://rxnav.nlm.nih.gov"
 
@@ -69,9 +70,19 @@ def query_by_type(branded_drugs, type, testDrugs):
     for branded_drug in branded_drugs:
         print (branded_drug)
         rxnorm_id = query_brand_name_rxnorm_id(branded_drug, currentTestedDrugs)
+
+    output = query_rxnorm_id(rxnorm_id)
+    
+    return output
+
+def query_rxnorm_id(rxnorm_id, type):
         
         data = requests.get(f"{BASE_URL}/REST/rxcui/{rxnorm_id}/allrelated.json?").json()
-        print(f"{BASE_URL}/REST/rxcui/{rxnorm_id}/allrelated.json?")
+        print(f"REST query: {BASE_URL}/REST/rxcui/{rxnorm_id}/allrelated.json?")
+        print("json");
+        print(data)
+        #parsed = json.loads(data)
+        #print(json.dumps(parsed, indent=4, sort_keys=True))
         
         for t in type:
             temp_output = {}
@@ -104,28 +115,40 @@ def query_by_type(branded_drugs, type, testDrugs):
                 temp_output = pd.DataFrame(temp_output)
                 
                 output = pd.concat([output, temp_output])
-    
-    return output
 
-if os.path.isfile("testedDrugs.csv"):
-    testDrugs = set(list(pd.read_csv("testedDrugs.csv")["Drugs"]))
-else:
-    testDrugs = []
+if False:
+   if os.path.isfile("testedDrugs.csv"):
+      testDrugs = set(list(pd.read_csv("testedDrugs.csv")["Drugs"]))
+   else:
+      testDrugs = []
 
-if not os.path.isfile(f"Concept_set_{Regimen}_Therapies.csv") or False:
-    cytotoxic = pd.read_csv(f"{Regimen} Therapies.csv")
-    #drugs = [i for i in list(cytotoxic["Therapies"]) if i not in testDrugs]
-    drugs = list(cytotoxic["Therapies"])
-    print (drugs)
+   if not os.path.isfile(f"Concept_set_{Regimen}_Therapies.csv") or False:
+      cytotoxic = pd.read_csv(f"{Regimen} Therapies.csv")
+      #drugs = [i for i in list(cytotoxic["Therapies"]) if i not in jjkkktestDrugs]
+      drugs = list(cytotoxic["Therapies"])
+      print (drugs)
 
-    clinical_drugs = query_by_type(branded_drugs=drugs, type=["SBDC", "SCDC", "SCD", "GPCK", "SBD", "BPCK", "IN", "MIN"], testDrugs=drugs)
-    clinical_drugs = clinical_drugs.drop_duplicates()
-    print (clinical_drugs)
-    clinical_drugs.to_csv(f"Concept_set_{Regimen}_Therapies.csv", index=False)
+      # clinical_drugs = query_by_type(branded_drugs=drugs, type=["SBDC", "SCDC", "SCD", "GPCK", "SBD", "BPCK", "IN", "MIN"], testDrugs=drugs)
+      clinical_drugs = query_by_type(branded_drugs=drugs, type=["DFG"], testDrugs=drugs)
+      clinical_drugs = clinical_drugs.drop_duplicates()
+      print (clinical_drugs)
+      clinical_drugs.to_csv(f"Concept_set_{Regimen}_Therapies.csv", index=False)
 
-    clinical_con_lst = clinical_concepts_list(clinical_drugs, col="Concept ID")
-    print (clinical_con_lst)
-else:
-    clinical_drugs = pd.read_csv(f"Concept_set_{Regimen}_Therapies.csv")
-    clinical_con_list = clinical_concepts_list(clinical_drugs, col="Concept ID")
-    print (clinical_con_list)
+      clinical_con_lst = clinical_concepts_list(clinical_drugs, col="Concept ID")
+      print (clinical_con_lst)
+   else:
+      clinical_drugs = pd.read_csv(f"Concept_set_{Regimen}_Therapies.csv")
+      clinical_con_list = clinical_concepts_list(clinical_drugs, col="Concept ID")
+      print (clinical_con_list)
+
+
+#clinical_drugs = query_rxnorm_id("8640", type=["DFG"])
+#print(clinical_drugs)
+
+rxnorm_id = "8640"
+#data = requests.get(f"{BASE_URL}/REST/rxcui/{rxnorm_id}/allrelated.json?tty=DFG").json()
+data = requests.get(f"{BASE_URL}/REST/rxcui/{rxnorm_id}/related.json?tty=DFG").json()
+print(data)
+#ttys = data['allRelatedGroup']['conceptGroup']
+#dfgs = [tty['conceptProperties'] for tty in ttys if tty['tty'] == 'DFG'][0]
+#print(dfgs)
