@@ -9,8 +9,11 @@ rxcuis = [ 8640, 6902, 3264, 10759, 5492, 8638, 1514, 4452, 22396,
             21660, 2878, 55681, 4463, 1312358, 21285, 38668, 3256,
             7910, 29523, 12473, 978038, 2286252, 665792, 495088, 669988,]
 
-for c in rxcuis:
-    data = requests.get(f"{BASE_URL}/REST/rxcui/{c}/allrelated.json").json()
+for c in rxcuis[0:2]:
+    call = f"{BASE_URL}/REST/rxcui/{c}?filterByProperty=DFG"
+    print(f"calling {call}")
+    data = requests.get(call).json()
+    #data = requests.get(f"{BASE_URL}/REST/rxcui/{c}/allrelated.json").json()
     #data = requests.get(f"{BASE_URL}/REST/rxcui/{c}/allrelated.json?tty=SCDC+DFG+IN+MIN").json()
     #dfg =
     print(data)
